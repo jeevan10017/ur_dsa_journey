@@ -1,0 +1,56 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+.env
+# Dependency directories
+node_modules/
+# Build directories
+dist/
+# Temporary files
+tmp/
+# Coverage directory used by tools like istanbul
+coverage/
+# Optional npm cache directory
+.npm
+# Optional eslint cache
+.eslintcache
+# Optional REPL history
+.repl
+# Optional cache directory for prettier
+.prettier-cache
+# Optional cache directory for rollup
+.rollup.cache
+# Optional cache directory for webpack
+.webpack-cache
+# Optional cache directory for babel
+.babel-cache
+# Optional cache directory for parcel
+.parcel-cache
+# Optional cache directory for vite
+.vite
+# Optional cache directory for snowpack
+.snowpack
+# Optional cache directory for esbuild
+
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

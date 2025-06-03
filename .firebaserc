@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "default": "ur-dsajourney",
+    "dsajourney": "ur-dsajourney",
+    "staging": "ur-dsajourney",
+    "dsa": "ur-dsajourney"
+  },
+  "targets": {},
+  "etags": {}
+}
