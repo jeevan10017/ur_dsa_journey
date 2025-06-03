@@ -7,7 +7,7 @@ import CodeEditor from './CodeEditor';
 import { Plus, Save, ChevronLeft, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
-import { scheduleEmailReminder } from '../../services/emailService';
+import { scheduleEmailReminder, createUserProfileIfNotExists } from '../../services/emailService';
 import { TOPICS } from '../../utils/constants';
 
 const QuestionForm = () => {
@@ -107,60 +107,83 @@ const QuestionForm = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!formData.title.trim() || !formData.description.trim()) {
-    toast.error('Title and description are required');
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const questionData = {
-      title: formData.title.trim(),
-      description: formData.description,
-      difficulty: formData.difficulty,
-      code: formData.code,
-      notes: formData.notes,
-      reminder: formData.reminder,
-      topics: formData.topics,
-      questionLink: formData.questionLink.trim(),
-      testCases: formData.testCases.filter(tc => tc.input.trim() || tc.output.trim()),
-      updatedAt: new Date()
-    };
-
-    if (isEditing) {
-      const { error } = await updateQuestion(id, questionData);
-      if (error) {
-        toast.error('Failed to update question');
-      } else {
-        // Always schedule reminders for updates
-        await scheduleEmailReminder(user.uid, id, formData.reminder);
-        toast.success('Question updated successfully!');
-        navigate(`/question/${id}`);
-      }
-    } else {
-      const { id: newId, error } = await createQuestion(user.uid, {
-        ...questionData,
-        createdAt: new Date()
-      });
-      if (error) {
-        toast.error('Failed to add question');
-      } else {
-        await scheduleEmailReminder(user.uid, newId, formData.reminder);
-        toast.success('Question added successfully!');
-        navigate(`/question/${newId}`);
-      }
+    e.preventDefault();
+    
+    if (!formData.title.trim() || !formData.description.trim()) {
+      toast.error('Title and description are required');
+      return;
     }
-  } catch (error) {
-    console.error('Error saving question:', error);
-    toast.error('An error occurred while saving');
-  } finally {
-    setLoading(false);
-  }
-};
-  
+
+    setLoading(true);
+
+    try {
+      // Ensure user profile exists before creating questions/reminders
+      console.log('Ensuring user profile exists for user:', user.uid);
+      await createUserProfileIfNotExists(user.uid);
+
+      const questionData = {
+        title: formData.title.trim(),
+        description: formData.description,
+        difficulty: formData.difficulty,
+        code: formData.code,
+        notes: formData.notes,
+        reminder: formData.reminder,
+        topics: formData.topics,
+        questionLink: formData.questionLink.trim(),
+        testCases: formData.testCases.filter(tc => tc.input.trim() || tc.output.trim()),
+        updatedAt: new Date()
+      };
+
+      let questionId;
+
+      if (isEditing) {
+        const { error } = await updateQuestion(id, questionData);
+        if (error) {
+          toast.error('Failed to update question: ' + error);
+          return;
+        }
+        questionId = id;
+        console.log('Question updated successfully:', questionId);
+      } else {
+        const { id: newId, error } = await createQuestion(user.uid, {
+          ...questionData,
+          createdAt: new Date()
+        });
+        if (error) {
+          toast.error('Failed to add question: ' + error);
+          return;
+        }
+        questionId = newId;
+        console.log('Question created successfully:', questionId);
+      }
+
+      // Schedule email reminders if reminder is not 'none'
+      if (formData.reminder && formData.reminder !== 'none') {
+        try {
+          console.log('Scheduling email reminder:', {
+            userId: user.uid,
+            questionId,
+            reminderInterval: formData.reminder
+          });
+          
+          await scheduleEmailReminder(user.uid, questionId, formData.reminder);
+          console.log('Email reminder scheduled successfully');
+        } catch (emailError) {
+          console.error('Error scheduling email reminder:', emailError);
+          toast.error('Question saved but failed to schedule email reminder: ' + emailError.message);
+        }
+      }
+
+      toast.success(isEditing ? 'Question updated successfully!' : 'Question added successfully!');
+      navigate(`/question/${questionId}`);
+
+    } catch (error) {
+      console.error('Error saving question:', error);
+      toast.error('An error occurred while saving: ' + (error.message || error));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const topicOptions = TOPICS.map(topic => ({ value: topic, label: topic }));
   const selectedTopics = formData.topics.map(topic => ({ value: topic, label: topic }));
