@@ -419,7 +419,7 @@ const CodeEditor = ({ value, onChange, readOnly = false, language = 'javascript'
       )}
 
       {/* Problems Summary */}
-      {(errors.length > 0 || warnings.length > 0) && (
+      {/* {(errors.length > 0 || warnings.length > 0) && (
         <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <div className="p-3 max-h-32 overflow-y-auto">
             <div className="text-sm space-y-1">
@@ -438,7 +438,7 @@ const CodeEditor = ({ value, onChange, readOnly = false, language = 'javascript'
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

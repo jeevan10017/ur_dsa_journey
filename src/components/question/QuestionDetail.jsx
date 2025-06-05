@@ -187,37 +187,54 @@ const QuestionDetail = () => {
         />
       )}
       
-      {/* Main Content */}
+      {/* Main Content - Two Column Layout on Large Screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-        {/* Left Column - Problem Description and Test Cases */}
+        {/* Left Column - Problem Description */}
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Problem Statement
             </h2>
             <div 
-              className="prose dark:prose-invert max-w-none bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+              className="prose dark:prose-invert max-w-none bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
               dangerouslySetInnerHTML={{ __html: question.description }}
             />
           </div>
+        </div>
+        
+        {/* Right Column - Solution Code and Test Cases */}
+        <div className="space-y-6">
+          {/* Solution Code */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Solution Code
+            </h2>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden h-84">
+              <CodeEditor 
+                value={question.code || '// No solution code provided'} 
+                readOnly={true}
+              />
+            </div>
+          </div>
           
+          {/* Test Cases */}
           {question.testCases && question.testCases.length > 0 && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                 Test Cases
               </h2>
-              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
                 {question.testCases.map((testCase, index) => (
-                  <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0">
-                    <div className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
+                    <div className="font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Test Case {index + 1}:
                     </div>
                     {typeof testCase === 'object' ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {testCase.input && (
                           <div>
                             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Input:</span>
-                            <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-2 rounded mt-1 overflow-x-auto">
+                            <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-3 rounded mt-1 overflow-x-auto">
                               {testCase.input}
                             </pre>
                           </div>
@@ -225,14 +242,14 @@ const QuestionDetail = () => {
                         {testCase.output && (
                           <div>
                             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Output:</span>
-                            <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-2 rounded mt-1 overflow-x-auto">
+                            <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-3 rounded mt-1 overflow-x-auto">
                               {testCase.output}
                             </pre>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-2 rounded overflow-x-auto">
+                      <pre className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-3 rounded overflow-x-auto">
                         {testCase}
                       </pre>
                     )}
@@ -241,19 +258,6 @@ const QuestionDetail = () => {
               </div>
             </div>
           )}
-        </div>
-        
-        {/* Right Column - Solution Code */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Solution Code
-          </h2>
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
-            <CodeEditor 
-              value={question.code || '// No solution code provided'} 
-              readOnly={true}
-            />
-          </div>
         </div>
       </div>
 
