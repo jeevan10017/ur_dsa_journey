@@ -15,65 +15,93 @@ import './styles/globals.css';
 import Home from './pages/Home';
 import { QuestionProvider } from './contexts/QuestionContext';
 
-
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <QuestionProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'var(--toast-bg)',
-                  color: 'var(--toast-color)',
-                },
-                success: {
-                  iconTheme: {
-                    primary: '#10b981',
-                    secondary: '#ffffff',
+          <Router>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'var(--toast-bg)',
+                    color: 'var(--toast-color)',
                   },
-                },
-                error: {
-                  iconTheme: {
-                    primary: '#ef4444',
-                    secondary: '#ffffff',
+                  success: {
+                    iconTheme: {
+                      primary: '#10b981',
+                      secondary: '#ffffff',
+                    },
                   },
-                },
-              }}
-            />
-            
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              
-              {/* Protected Routes */}
-              <Route
-                path="/*"
-                element={
-                  <AuthGuard>
-                    <Header />
-                    <main className="pt-16">
-                      <Routes>
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/add-question" element={<AddQuestion />} />
-                        <Route path="/question/:id" element={<QuestionDetail />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                      </Routes>
-                    </main>
-                  </AuthGuard>
-                }
+                  error: {
+                    iconTheme: {
+                      primary: '#ef4444',
+                      secondary: '#ffffff',
+                    },
+                  },
+                }}
               />
-            </Routes>
-          </div>
-        </Router>
+              
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <Dashboard />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/add-question"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <AddQuestion />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/question/:id"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <QuestionDetail />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <Profile />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
+                
+                {/* Catch all route */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </div>
+          </Router>
         </QuestionProvider>
       </AuthProvider>
     </ThemeProvider>

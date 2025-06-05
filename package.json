@@ -1,5 +1,8 @@
 {
   "name": "dsa_journey_tracker",
+  "homepage": "https://ur-dsa-journey.vercel.app/",
+  "description": "A React application to track your Data Structures and Algorithms learning journey.",
+  "author": " Jeevan Kumar Korra ",
   "private": true,
   "version": "0.0.0",
   "type": "module",
