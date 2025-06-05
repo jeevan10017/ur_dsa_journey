@@ -323,7 +323,7 @@ const Dashboard = () => {
         placeholder="Search questions, topics, or notes..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="pl-10 input"
+        className="pl-10 input dark:bg-gradient-to-r from-slate-900 to-gray-900"
       />
     </div>
     

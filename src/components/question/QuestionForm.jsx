@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { createQuestion, updateQuestion, getQuestion } from '../../services/firestore';
 import RichTextEditor from './RichTextEditor';
 import CodeEditor from './CodeEditor';
-import { Plus, Save, ChevronLeft, X } from 'lucide-react';
+import { Plus, Save, ChevronLeft, X, BookOpen, Code, FileText, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { scheduleEmailReminder, createUserProfileIfNotExists } from '../../services/emailService';
@@ -188,222 +188,366 @@ const QuestionForm = () => {
   const topicOptions = TOPICS.map(topic => ({ value: topic, label: topic }));
   const selectedTopics = formData.topics.map(topic => ({ value: topic, label: topic }));
 
+  // Custom styles for react-select to support dark mode
+  const selectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: 'transparent',
+      borderColor: state.isFocused 
+        ? 'rgb(236 72 153)' // pink-500
+        : 'rgb(209 213 219)', // gray-300 for light mode
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(236, 72, 153, 0.2)' : 'none',
+      '&:hover': {
+        borderColor: 'rgb(236 72 153)'
+      }
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: 'var(--select-bg)',
+      border: '1px solid var(--select-border)',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected 
+        ? 'rgb(236 72 153)' 
+        : state.isFocused 
+          ? 'var(--select-option-hover)'
+          : 'transparent',
+      color: state.isSelected ? 'white' : 'var(--select-text)',
+      '&:hover': {
+        backgroundColor: state.isSelected ? 'rgb(236 72 153)' : 'var(--select-option-hover)'
+      }
+    }),
+    multiValue: (provided) => ({
+      ...provided,
+      backgroundColor: 'rgb(236 72 153)',
+      borderRadius: '6px'
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      color: 'white'
+    }),
+    multiValueRemove: (provided) => ({
+      ...provided,
+      color: 'white',
+      '&:hover': {
+        backgroundColor: 'rgb(219 39 119)',
+        color: 'white'
+      }
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: 'var(--select-placeholder)'
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'var(--select-text)'
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: 'var(--select-text)'
+    })
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="btn-secondary inline-flex items-center space-x-2"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span>Back</span>
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {isEditing ? 'Edit Question' : 'Add New Question'}
-        </h1>
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="btn-primary inline-flex items-center space-x-2"
-        >
-          {loading ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {isEditing ? 'Updating...' : 'Saving...'}
-            </>
-          ) : (
-            <>
-              {isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              <span>{isEditing ? 'Update Question' : 'Save Question'}</span>
-            </>
-          )}
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <style jsx>{`
+        :root {
+          --select-bg: white;
+          --select-border: rgb(209 213 219);
+          --select-text: rgb(17 24 39);
+          --select-placeholder: rgb(107 114 128);
+          --select-option-hover: rgb(243 244 246);
+        }
+        
+        .dark {
+          --select-bg: rgb(31 41 55);
+          --select-border: rgb(75 85 99);
+          --select-text: rgb(243 244 246);
+          --select-placeholder: rgb(156 163 175);
+          --select-option-hover: rgb(55 65 81);
+        }
+      `}</style>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Question Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            className="input w-full"
-            placeholder="Enter question title"
-          />
-        </div>
-
-        {/* Topics and Question Link */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Topics
-            </label>
-            <Select
-              isMulti
-              options={topicOptions}
-              value={selectedTopics}
-              onChange={handleTopicsChange}
-              className="react-select-container"
-              classNamePrefix="react-select"
-              placeholder="Select topics..."
-            />
-          </div>
-          <div>
-            <label htmlFor="questionLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Question Link
-            </label>
-            <input
-              type="url"
-              id="questionLink"
-              value={formData.questionLink}
-              onChange={(e) => setFormData({...formData, questionLink: e.target.value})}
-              className="input w-full"
-              placeholder="https://leetcode.com/problems/..."
-            />
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Problem Description *
-          </label>
-          <RichTextEditor
-            value={formData.description}
-            onChange={(value) => handleRichTextChange('description', value)}
-          />
-        </div>
-
-        {/* Test Cases */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Test Cases
-          </label>
-          <div className="space-y-4">
-            {formData.testCases.map((testCase, index) => (
-              <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Test Case {index + 1}
-                  </span>
-                  {formData.testCases.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTestCase(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Input</label>
-                    <textarea
-                      value={testCase.input}
-                      onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)}
-                      className="input w-full h-20 resize-none"
-                      placeholder="[1,2,3,4]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Expected Output</label>
-                    <textarea
-                      value={testCase.output}
-                      onChange={(e) => handleTestCaseChange(index, 'output', e.target.value)}
-                      className="input w-full h-20 resize-none"
-                      placeholder="10"
-                    />
-                  </div>
-                </div>
+      {/* Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Back
+              </button>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {isEditing ? 'Edit Question' : 'Create New Question'}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  {isEditing ? 'Update your coding question' : 'Add a new coding problem to your collection'}
+                </p>
               </div>
-            ))}
+            </div>
             <button
-              type="button"
-              onClick={addTestCase}
-              className="btn-secondary inline-flex items-center space-x-2"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
             >
-              <Plus className="h-4 w-4" />
-              <span>Add Test Case</span>
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isEditing ? 'Updating...' : 'Saving...'}
+                </>
+              ) : (
+                <>
+                  {isEditing ? <Save className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                  {isEditing ? 'Update Question' : 'Save Question'}
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Code */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Solution Code
-          </label>
-          <CodeEditor
-            value={formData.code}
-            onChange={(value) => handleRichTextChange('code', value)}
-          />
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Notes/Hints
-          </label>
-          <RichTextEditor
-            value={formData.notes}
-            onChange={(value) => handleRichTextChange('notes', value)}
-          />
-        </div>
-
-        {/* Difficulty and Reminder */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Difficulty Level
-            </label>
-            <div className="flex space-x-4">
-              {['easy', 'medium', 'hard'].map((level) => (
-                <label key={level} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="difficulty"
-                    value={level}
-                    checked={formData.difficulty === level}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="ml-2 capitalize text-gray-700 dark:text-gray-300">
-                    {level}
-                  </span>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Basic Information Section */}
+          <div className="bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4  ">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h2>
+              </div>
+            </div>
+            <div className="p-6 space-y-6">
+              {/* Title */}
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Question Title *
                 </label>
-              ))}
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
+                  placeholder="Enter a descriptive title for your question"
+                />
+              </div>
+
+              {/* Topics and Question Link - Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Topics & Tags
+                  </label>
+                  <Select
+                    isMulti
+                    options={topicOptions}
+                    value={selectedTopics}
+                    onChange={handleTopicsChange}
+                    styles={selectStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Select relevant topics..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="questionLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Question Link
+                  </label>
+                  <input
+                    type="url"
+                    id="questionLink"
+                    value={formData.questionLink}
+                    onChange={(e) => setFormData({...formData, questionLink: e.target.value})}
+                    className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
+                    placeholder="https://leetcode.com/problems/..."
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Problem Description *
+                </label>
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <RichTextEditor
+                    value={formData.description}
+                    onChange={(value) => handleRichTextChange('description', value)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div>
-            <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Remind me to revise in
-            </label>
-            <select
-              id="reminder"
-              name="reminder"
-              value={formData.reminder}
-              onChange={handleChange}
-              className="input w-full"
-            >
-              <option value="7_days">7 Days</option>
-              <option value="14_days">2 Weeks</option>
-              <option value="30_days">1 Month</option>
-              <option value="none">No Reminder</option>
-            </select>
+
+          {/* Two Column Layout for Test Cases and Code */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            
+            {/* Test Cases Section */}
+            <div className="bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="px-6 py-4 ">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Test Cases</h2>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {formData.testCases.map((testCase, index) => (
+                    <div key={index} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          Test Case {index + 1}
+                        </span>
+                        {formData.testCases.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeTestCase(index)}
+                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Input</label>
+                          <textarea
+                            value={testCase.input}
+                            onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)}
+                            className="w-full px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none font-mono"
+                            rows={3}
+                            placeholder="[1,2,3,4]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Expected Output</label>
+                          <textarea
+                            value={testCase.output}
+                            onChange={(e) => handleTestCaseChange(index, 'output', e.target.value)}
+                            className="w-full px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none font-mono"
+                            rows={3}
+                            placeholder="10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addTestCase}
+                    className="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Test Case
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Code Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gradient-to-r from-slate-900 to-gray-900">
+              <div className="px-6 py-4 ">
+                <div className="flex items-center space-x-2">
+                  <Code className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Solution Code</h2>
+                </div>
+              </div>
+              <div className="p-6">
+                <CodeEditor
+                  value={formData.code}
+                  onChange={(value) => handleRichTextChange('code', value)}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </form>
+
+          {/* Notes Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gradient-to-r from-slate-900 to-gray-900 overflow-hidden">
+            <div className="px-6 py-4 ">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Notes & Hints</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                <RichTextEditor
+                  value={formData.notes}
+                  onChange={(value) => handleRichTextChange('notes', value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Settings Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gradient-to-r from-slate-900 to-gray-900 overflow-hidden">
+            <div className="px-6 py-4 ">
+              <div className="flex items-center space-x-2">
+                <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Question Settings</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Difficulty Level
+                  </label>
+                  <div className="space-y-3">
+                    {[
+                      { value: 'easy', label: 'Easy', color: 'text-green-600 dark:text-green-400' },
+                      { value: 'medium', label: 'Medium', color: 'text-yellow-600 dark:text-yellow-400' },
+                      { value: 'hard', label: 'Hard', color: 'text-red-600 dark:text-red-400' }
+                    ].map((level) => (
+                      <label key={level.value} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="difficulty"
+                          value={level.value}
+                          checked={formData.difficulty === level.value}
+                          onChange={handleChange}
+                          className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 dark:border-gray-600"
+                        />
+                        <span className={`ml-3 text-sm font-medium ${level.color}`}>
+                          {level.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Reminder Schedule
+                  </label>
+                  <select
+                    id="reminder"
+                    name="reminder"
+                    value={formData.reminder}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="7_days">7 Days</option>
+                    <option value="14_days">2 Weeks</option>
+                    <option value="30_days">1 Month</option>
+                    <option value="none">No Reminder</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

@@ -273,7 +273,7 @@ const RichTextEditor = ({ value = '', onChange = () => {} }) => {
         contentEditable
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        className="min-h-[200px] max-h-[400px] overflow-y-auto p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset text-gray-900 dark:text-gray-100"
+        className="min-h-[200px] max-h-[400px] overflow-y-auto p-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-inset text-gray-900 dark:text-gray-100"
         style={{
           lineHeight: '1.6',
         }}

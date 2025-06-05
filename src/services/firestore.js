@@ -10,7 +10,8 @@ import {
   where,
   orderBy,
   Timestamp,
-  serverTimestamp
+  serverTimestamp,
+  setDoc
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
@@ -428,7 +429,7 @@ export const getUserReminders = async (userId) => {
   }
 };
 
-
+// User Profile operations
 export const createUserProfile = async (userId, profileData) => {
   try {
     const user = checkAuth();
@@ -439,15 +440,42 @@ export const createUserProfile = async (userId, profileData) => {
     
     await executeWithRetry(async () => {
       const docRef = doc(db, 'users', userId);
-      await updateDoc(docRef, {
+      await setDoc(docRef, {
         ...profileData,
+        userId,
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true }); // Use merge to avoid overwriting existing data
+    });
+    
+    console.log('User profile created/updated successfully:', userId);
+    return { error: null };
+  } catch (error) {
+    console.error('Create user profile error:', error);
+    return { error: handleFirestoreError(error) };
+  }
+};
+
+export const updateUserProfile = async (userId, updates) => {
+  try {
+    const user = checkAuth();
+    
+    if (user.uid !== userId) {
+      throw new Error('User ID mismatch. Please sign in again.');
+    }
+    
+    await executeWithRetry(async () => {
+      const docRef = doc(db, 'users', userId);
+      await updateDoc(docRef, {
+        ...updates,
         updatedAt: serverTimestamp()
       });
     });
     
+    console.log('User profile updated successfully:', userId);
     return { error: null };
   } catch (error) {
+    console.error('Update user profile error:', error);
     return { error: handleFirestoreError(error) };
   }
 };
@@ -466,8 +494,10 @@ export const getUserProfile = async (userId) => {
       return docSnap.exists() ? docSnap.data() : null;
     });
     
+    console.log('User profile retrieved successfully:', userId);
     return { profile, error: null };
   } catch (error) {
+    console.error('Get user profile error:', error);
     return { profile: null, error: handleFirestoreError(error) };
   }
 };

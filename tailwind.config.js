@@ -12,9 +12,9 @@ export default {
           css: {
             color: theme('colors.gray.700'),
             a: {
-              color: theme('colors.indigo.600'),
+              color: theme('colors.pink.600'),
               '&:hover': {
-                color: theme('colors.indigo.800'),
+                color: theme('colors.pink.800'),
               },
             },
             'code::before': {
@@ -29,9 +29,9 @@ export default {
           css: {
             color: theme('colors.gray.300'),
             a: {
-              color: theme('colors.indigo.400'),
+              color: theme('colors.pink.400'),
               '&:hover': {
-                color: theme('colors.indigo.200'),
+                color: theme('colors.pink.200'),
               },
             },
             h1: {
