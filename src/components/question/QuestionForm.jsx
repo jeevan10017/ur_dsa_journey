@@ -4,10 +4,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { createQuestion, updateQuestion, getQuestion } from '../../services/firestore';
 import RichTextEditor from './RichTextEditor';
 import CodeEditor from './CodeEditor';
-import { Plus, Save, ChevronLeft, X, BookOpen, Code, FileText, Settings } from 'lucide-react';
+import { Plus, Save, ChevronLeft, X, BookOpen, Code, FileText, Settings, Mail, MailX } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
-import { scheduleEmailReminder, createUserProfileIfNotExists } from '../../services/emailService';
+import { 
+  scheduleEmailReminder, 
+  createUserProfileIfNotExists, 
+  getUserPreferences 
+} from '../../services/emailService';
 import { TOPICS } from '../../utils/constants';
 
 const QuestionForm = () => {
@@ -17,6 +21,9 @@ const QuestionForm = () => {
   const isEditing = Boolean(id);
 
   const [loading, setLoading] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [userPreferences, setUserPreferences] = useState(null);
+  const [preferencesLoading, setPreferencesLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -29,41 +36,98 @@ const QuestionForm = () => {
     testCases: [{ input: '', output: '' }]
   });
 
+  // Load user preferences
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      if (user?.uid) {
+        try {
+          setPreferencesLoading(true);
+          const preferences = await getUserPreferences(user.uid);
+          setUserPreferences(preferences);
+          
+          // Set default reminder based on user preferences
+          if (!isEditing) { // Only set defaults for new questions
+            if (preferences?.defaultReminderInterval) {
+              setFormData(prev => ({
+                ...prev,
+                reminder: preferences.emailReminders ? preferences.defaultReminderInterval : 'none'
+              }));
+            } else {
+              // If email reminders are disabled, set to 'none'
+              setFormData(prev => ({
+                ...prev,
+                reminder: preferences?.emailReminders ? '7_days' : 'none'
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error loading user preferences:', error);
+          toast.error('Failed to load user preferences');
+        } finally {
+          setPreferencesLoading(false);
+        }
+      }
+    };
+
+    loadUserPreferences();
+  }, [user, isEditing]);
+
   // Load question data for editing
   useEffect(() => {
-    if (isEditing && id) {
+    if (isEditing && id && !preferencesLoading && user?.uid) {
       const loadQuestion = async () => {
         setLoading(true);
         try {
           const { question, error } = await getQuestion(id);
           if (error) {
-            toast.error('Failed to load question');
+            console.error('Error loading question:', error);
+            toast.error('Failed to load question: ' + error);
             navigate('/dashboard');
-          } else if (question && question.userId === user.uid) {
+          } else if (question) {
+            // Check if user owns this question
+            if (question.userId !== user.uid) {
+              toast.error('You do not have permission to edit this question');
+              navigate('/dashboard');
+              return;
+            }
+
+            // Set form data with loaded question
             setFormData({
               title: question.title || '',
               description: question.description || '',
               difficulty: question.difficulty || 'medium',
               code: question.code || '',
               notes: question.notes || '',
-              reminder: question.reminder || '7_days',
-              topics: question.topics || [],
+              reminder: question.reminder || (userPreferences?.emailReminders ? '7_days' : 'none'),
+              topics: Array.isArray(question.topics) ? question.topics : [],
               questionLink: question.questionLink || '',
               testCases: Array.isArray(question.testCases) && question.testCases.length > 0
-                ? question.testCases.map(tc => typeof tc === 'object' ? tc : { input: tc, output: '' })
+                ? question.testCases.map(tc => {
+                    if (typeof tc === 'object' && tc !== null) {
+                      return { input: tc.input || '', output: tc.output || '' };
+                    }
+                    return { input: String(tc || ''), output: '' };
+                  })
                 : [{ input: '', output: '' }]
             });
+            setInitialLoadComplete(true);
+          } else {
+            toast.error('Question not found');
+            navigate('/dashboard');
           }
         } catch (err) {
           console.error('Error loading question:', err);
           toast.error('Failed to load question');
+          navigate('/dashboard');
         } finally {
           setLoading(false);
         }
       };
       loadQuestion();
+    } else if (!isEditing) {
+      setInitialLoadComplete(true);
     }
-  }, [id, isEditing, user, navigate]);
+  }, [id, isEditing, user, navigate, preferencesLoading, userPreferences]);
 
   const handleChange = (e) => {
     setFormData({
@@ -157,24 +221,33 @@ const QuestionForm = () => {
         console.log('Question created successfully:', questionId);
       }
 
-      // Schedule email reminders if reminder is not 'none'
-      if (formData.reminder && formData.reminder !== 'none') {
+      // Schedule email reminders only if user has email reminders enabled and reminder is not 'none'
+      if (userPreferences?.emailReminders && formData.reminder && formData.reminder !== 'none') {
         try {
           console.log('Scheduling email reminder:', {
             userId: user.uid,
             questionId,
-            reminderInterval: formData.reminder
+            reminderInterval: formData.reminder,
+            userEmailReminders: userPreferences.emailReminders
           });
           
           await scheduleEmailReminder(user.uid, questionId, formData.reminder);
           console.log('Email reminder scheduled successfully');
+          toast.success(isEditing ? 'Question updated and reminder scheduled!' : 'Question added and reminder scheduled!');
         } catch (emailError) {
           console.error('Error scheduling email reminder:', emailError);
           toast.error('Question saved but failed to schedule email reminder: ' + emailError.message);
         }
+      } else {
+        console.log('Skipping email reminder scheduling:', {
+          emailRemindersEnabled: userPreferences?.emailReminders,
+          reminderInterval: formData.reminder,
+          reason: !userPreferences?.emailReminders ? 'Email reminders disabled' : 'No reminder selected'
+        });
+        toast.success(isEditing ? 'Question updated successfully!' : 'Question added successfully!');
       }
 
-      toast.success(isEditing ? 'Question updated successfully!' : 'Question added successfully!');
+      // Navigate to the question detail page
       navigate(`/question/${questionId}`);
 
     } catch (error) {
@@ -187,6 +260,20 @@ const QuestionForm = () => {
 
   const topicOptions = TOPICS.map(topic => ({ value: topic, label: topic }));
   const selectedTopics = formData.topics.map(topic => ({ value: topic, label: topic }));
+
+  // Show loading while preferences are being loaded or question is being loaded
+  if (preferencesLoading || (isEditing && !initialLoadComplete && !loading)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            {preferencesLoading ? 'Loading preferences...' : 'Loading question...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Custom styles for react-select to support dark mode
   const selectStyles = {
@@ -527,21 +614,47 @@ const QuestionForm = () => {
                 </div>
                 
                 <div>
-                  <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Reminder Schedule
-                  </label>
-                  <select
-                    id="reminder"
-                    name="reminder"
-                    value={formData.reminder}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
-                  >
-                    <option value="7_days">7 Days</option>
-                    <option value="14_days">2 Weeks</option>
-                    <option value="30_days">1 Month</option>
-                    <option value="none">No Reminder</option>
-                  </select>
+                  <div className="flex items-center space-x-2 mb-3">
+                    <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Reminder Schedule
+                    </label>
+                    {userPreferences?.emailReminders ? (
+                      <Mail className="h-4 w-4 text-green-500" title="Email reminders enabled" />
+                    ) : (
+                      <MailX className="h-4 w-4 text-red-500" title="Email reminders disabled" />
+                    )}
+                  </div>
+                  
+                  {userPreferences?.emailReminders ? (
+                    <select
+                      id="reminder"
+                      name="reminder"
+                      value={formData.reminder}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
+                    >
+                      <option value="7_days">Every 7 Days</option>
+                      <option value="14_days">Every 2 Weeks</option>
+                      <option value="30_days">Every 1 Month</option>
+                      <option value="none">No Reminder</option>
+                    </select>
+                  ) : (
+                    <div className="w-full px-4 py-3 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <MailX className="h-4 w-4" />
+                        <span className="text-sm">Email reminders disabled in profile</span>
+                      </div>
+                      <p className="text-xs mt-1">
+                        Enable email reminders in your profile to use reminder schedules
+                      </p>
+                    </div>
+                  )}
+                  
+                  {userPreferences?.emailReminders && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Reminders will be sent to your registered email address
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

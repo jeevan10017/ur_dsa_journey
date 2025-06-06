@@ -5,6 +5,56 @@ import { getUserProfile, createUserProfile, updateUserProfile } from '../service
 import { auth } from '../services/firebase'; 
 import { Eye, EyeOff, Mail, User as UserIcon, Edit, Save, Camera, X, Check, AlertCircle, Code, Building } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTheme } from '../contexts/ThemeContext';
+
+
+const InputField = React.memo(({ 
+  label, 
+  name, 
+  type = 'text', 
+  icon: Icon, 
+  placeholder, 
+  required = false,
+  value,
+  onChange,
+  readOnly,
+  error
+}) => (
+  <div>
+    <label htmlFor={name} className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-100 text:gray-900" />}
+      <input
+        type={type}
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        readOnly={readOnly}
+        className={`
+          ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-2.5 w-full
+          text-sm
+          bg-gray-50 dark:bg-gray-800 
+          border border-gray-200 dark:border-gray-700 
+          rounded-lg
+          focus:ring-2 focus:ring-pink-500 focus:border-transparent
+          transition-all duration-200 dark:text-gray-100 text:gray-900
+          ${readOnly ? 'cursor-not-allowed opacity-60' : ''}
+          ${error ? 'border-red-500 focus:ring-red-500' : ''}
+        `}
+        placeholder={placeholder}
+      />
+      {error && (
+        <div className="flex items-center mt-1 text-xs text-red-600">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          {error}
+        </div>
+      )}
+    </div>
+  </div>
+));
 
 const Profile = () => {
   const { user, userProfile, setUserProfile } = useAuth();
@@ -16,6 +66,7 @@ const Profile = () => {
   const [errors, setErrors] = useState({});
   const [isDirty, setIsDirty] = useState(false);
   const [localUserProfile, setLocalUserProfile] = useState(null);
+  const { theme: contextTheme, setTheme: contextSetTheme } = useTheme();
 
   const [formData, setFormData] = useState({
     displayName: '',
@@ -32,6 +83,25 @@ const Profile = () => {
     leetcodeUsername: '',
     profilePictureUrl: ''
   });
+
+  // Update form data when userProfile or localUserProfile changes
+    useEffect(() => {
+    if (isEditing) {
+      setFormData(prev => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          theme: contextTheme
+        }
+      }));
+    }
+  }, [contextTheme, isEditing]);
+
+  // Update theme immediately on dropdown change
+  const handleThemeChange = (e) => {
+    const newTheme = e.target.value;
+    contextSetTheme(newTheme);
+  };
 
   // Initialize form data
   useEffect(() => {
@@ -139,8 +209,6 @@ const Profile = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
   }
-
-  // Clear specific field error when user starts typing
   if (errors[name]) {
     setErrors(prev => ({ 
       ...prev, 
@@ -364,44 +432,7 @@ const Profile = () => {
     }
   };
 
-  // Input component with error handling
-  const InputField = ({ label, name, type = 'text', icon: Icon, placeholder, required = false, ...props }) => (
-  <div>
-    <label htmlFor={name} className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-100 text:gray-900" />}
-      <input
-        type={type}
-        id={name}
-        name={name}
-        value={formData[name] || ''}
-        onChange={isEditing ? handleChange : undefined}
-        readOnly={!isEditing}
-        className={`
-          ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-2.5 w-full
-          text-sm
-          bg-gray-50 dark:bg-gray-800 
-          border border-gray-200 dark:border-gray-700 
-          rounded-lg
-          focus:ring-2 focus:ring-pink-500 focus:border-transparent
-          transition-all duration-200 dark:text-gray-100 text:gray-900
-          ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-          ${errors[name] ? 'border-red-500 focus:ring-red-500' : ''}
-        `}
-        placeholder={placeholder}
-        {...props}
-      />
-      {errors[name] && (
-        <div className="flex items-center mt-1 text-xs text-red-600">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          {errors[name]}
-        </div>
-      )}
-    </div>
-  </div>
-);
+ 
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -538,20 +569,28 @@ const Profile = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputField
-                    label="Full Name"
-                    name="displayName"
-                    icon={UserIcon}
-                    placeholder="Enter your full name"
-                    required
-                  />
+                label="Full Name"
+                name="displayName"
+                icon={UserIcon}
+                placeholder="Enter your full name"
+                required
+                 value={formData.displayName}
+                onChange={isEditing ? handleChange : undefined}
+                 readOnly={!isEditing}
+                error={errors.displayName}
+              />
                   
                   <InputField
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    icon={Mail}
-                    placeholder="Enter your email"
-                    required
+                  label="Email Address"
+        name="email"
+        type="email"
+        icon={Mail}
+        placeholder="Enter your email"
+        required
+        value={formData.email}
+        onChange={isEditing ? handleChange : undefined}
+        readOnly={!isEditing}
+        error={errors.email}
                   />
                   
                   <div>
@@ -591,6 +630,10 @@ const Profile = () => {
                     name="institution"
                     icon={Building}
                     placeholder="Enter your institution or company"
+                    value={formData.institution}
+                    onChange={isEditing ? handleChange : undefined}
+                    readOnly={!isEditing}
+                    error={errors.institution}
                   />
 
                   <InputField
@@ -598,11 +641,14 @@ const Profile = () => {
                     name="leetcodeUsername"
                     icon={Code}
                     placeholder="Enter your LeetCode username"
+                    value={formData.leetcodeUsername}
+                    onChange={isEditing ? handleChange : undefined}
+                    readOnly={!isEditing}
+                    error={errors.leetcodeUsername}
                   />
                 </div>
               </div>
 
-              {/* Security */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
                   Security Settings
@@ -695,7 +741,14 @@ const Profile = () => {
                       id="theme"
                       name="preferences.theme"
                       value={formData.preferences.theme}
-                      onChange={isEditing ? handleChange : undefined}
+                      onChange={
+                        isEditing
+                          ? (e) => {
+                              handleChange(e);
+                              handleThemeChange(e);
+                            }
+                          : undefined
+                      }
                       disabled={!isEditing}
                       className={`
                         pl-3 pr-3 py-2.5 w-full max-w-xs text-sm

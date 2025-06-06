@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 
 const Header = () => {
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+   const { effectiveTheme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ const Header = () => {
               className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? (
+              {effectiveTheme === 'dark' ? (
                 <Sun className="h-5 w-5" />
               ) : (
                 <Moon className="h-5 w-5" />

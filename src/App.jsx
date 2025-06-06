@@ -74,6 +74,17 @@ function App() {
                     </AuthGuard>
                   }
                 />
+                 <Route
+                  path="/edit-question/:id"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <AddQuestion />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
                 <Route
                   path="/question/:id"
                   element={
