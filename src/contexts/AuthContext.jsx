@@ -18,23 +18,29 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
-        console.log('User details:', user ? { uid: user.uid, email: user.email } : 'No user');
-        
-        setUser(user);
-        setAuthError(null);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Auth state change error:', error);
-        setAuthError(error.message);
-        setUser(null);
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
+      console.log('User details:', user ? { uid: user.uid, email: user.email } : 'No user');
+      
+      if (user) {
+        // Force token refresh to ensure it's current
+        try {
+          await user.getIdToken(true);
+          console.log('Token refreshed successfully');
+        } catch (refreshError) {
+          console.error('Token refresh error:', refreshError);
+        }
       }
-    );
+      
+      setUser(user);
+      setAuthError(null);
+      setLoading(false);
+    }, (error) => {
+      console.error('Auth state change error:', error);
+      setAuthError(error.message);
+      setUser(null);
+      setLoading(false);
+    });
 
     return unsubscribe;
   }, []);

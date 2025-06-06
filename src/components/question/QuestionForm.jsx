@@ -12,6 +12,7 @@ import {
   createUserProfileIfNotExists, 
   getUserPreferences 
 } from '../../services/emailService';
+// import { addQuestionHistory } from '../../services/firestore';
 import { TOPICS } from '../../utils/constants';
 
 const QuestionForm = () => {
@@ -30,7 +31,7 @@ const QuestionForm = () => {
     difficulty: 'medium',
     code: '',
     notes: '',
-    reminder: '7_days',
+    reminder: 'none',
     topics: [],
     questionLink: '',
     testCases: [{ input: '', output: '' }]
@@ -56,7 +57,7 @@ const QuestionForm = () => {
               // If email reminders are disabled, set to 'none'
               setFormData(prev => ({
                 ...prev,
-                reminder: preferences?.emailReminders ? '7_days' : 'none'
+                reminder: preferences?.emailReminders ? 'none' : 'none'
               }));
             }
           }
@@ -221,6 +222,7 @@ const QuestionForm = () => {
         console.log('Question created successfully:', questionId);
       }
 
+      
       // Schedule email reminders only if user has email reminders enabled and reminder is not 'none'
       if (userPreferences?.emailReminders && formData.reminder && formData.reminder !== 'none') {
         try {
@@ -366,7 +368,7 @@ const QuestionForm = () => {
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                Back
+                 Back
               </button>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -633,10 +635,10 @@ const QuestionForm = () => {
                       onChange={handleChange}
                       className="w-full px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-colors"
                     >
+                      <option value="none">No Reminder</option>
                       <option value="7_days">Every 7 Days</option>
                       <option value="14_days">Every 2 Weeks</option>
                       <option value="30_days">Every 1 Month</option>
-                      <option value="none">No Reminder</option>
                     </select>
                   ) : (
                     <div className="w-full px-4 py-3 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">

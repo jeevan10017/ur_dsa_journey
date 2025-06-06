@@ -1,19 +1,25 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import AuthGuard from './components/auth/AuthGuard';
-import Header from './components/common/Header';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Dashboard from './pages/Dashboard';
-import AddQuestion from './pages/AddQuestion';
-import QuestionDetail from './components/question/QuestionDetail';
-import Profile from './pages/Profile';
-import './styles/globals.css';
-import Home from './pages/Home';
-import { QuestionProvider } from './contexts/QuestionContext';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import AuthGuard from "./components/auth/AuthGuard";
+import Header from "./components/common/Header";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
+import Dashboard from "./pages/Dashboard";
+import AddQuestion from "./pages/AddQuestion";
+import QuestionDetail from "./components/question/QuestionDetail";
+import Profile from "./pages/Profile";
+import "./styles/globals.css";
+import Home from "./pages/Home";
+import SharedQuestionPage from "./components/question/SharedQuestionPage";
+import { QuestionProvider } from "./contexts/QuestionContext";
 
 function App() {
   return (
@@ -27,29 +33,35 @@ function App() {
                 toastOptions={{
                   duration: 4000,
                   style: {
-                    background: 'var(--toast-bg)',
-                    color: 'var(--toast-color)',
+                    background: "var(--toast-bg)",
+                    color: "var(--toast-color)",
                   },
                   success: {
                     iconTheme: {
-                      primary: '#10b981',
-                      secondary: '#ffffff',
+                      primary: "#10b981",
+                      secondary: "#ffffff",
                     },
                   },
                   error: {
                     iconTheme: {
-                      primary: '#ef4444',
-                      secondary: '#ffffff',
+                      primary: "#ef4444",
+                      secondary: "#ffffff",
                     },
                   },
                 }}
               />
-              
+
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                
+                {/* Shared Route - NO AuthGuard for public access */}
+                <Route
+                  path="/shared/:shareId"
+                  element={<SharedQuestionPage />}
+                />
                 
                 {/* Protected Routes */}
                 <Route
@@ -74,7 +86,7 @@ function App() {
                     </AuthGuard>
                   }
                 />
-                 <Route
+                <Route
                   path="/edit-question/:id"
                   element={
                     <AuthGuard>
@@ -107,9 +119,11 @@ function App() {
                     </AuthGuard>
                   }
                 />
-                
                 {/* Catch all route */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="*"
+                  element={<Navigate to="/dashboard" replace />}
+                />
               </Routes>
             </div>
           </Router>

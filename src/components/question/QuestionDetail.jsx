@@ -7,30 +7,54 @@ import NotesSection from './NotesSection';
 import { ChevronLeft, Edit, Trash2, Star, Clock, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { Share2 } from 'lucide-react';
+import ShareModal from '../ui/ShareModal';
+import { getQuestionHistory } from '../../services/firestore';
+import HistorySection from './HistorySection';
+import CommentForm from './CommentForm';
 
-const QuestionDetail = () => {
+const QuestionDetail = ({
+  isShared = false,
+  accessLevel = 'view',
+  shareId,
+  share,
+  question: providedQuestion,
+  history: providedHistory
+}) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
-  const [question, setQuestion] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState(providedHistory || []);
+  const [question, setQuestion] = useState(providedQuestion || null);
+  const [loading, setLoading] = useState(!providedQuestion);
   const [error, setError] = useState(null);
   const [showNotes, setShowNotes] = useState(true);
+  const [showComments, setShowComments] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
+    // If question is already provided (from shared page), skip loading
+    if (providedQuestion) {
+      setQuestion(providedQuestion);
+      setHistory(providedHistory || []);
+      setLoading(false);
+      return;
+    }
+
     const loadQuestion = async () => {
-      if (!id || !user) return;
+      if (!id || (!user && !isShared)) return;
       
       setLoading(true);
       try {
-        const { question: q, error: e } = await getQuestion(id);
+        const { question: q, error: e } = await getQuestion(id, shareId);
         
         if (e) {
           setError(e);
           toast.error('Failed to load question');
-        } else if (!q || q.userId !== user.uid) {
+        } else if (!q) {
+          setError('Question not found');
+        } else if (!isShared && (!user || q.userId !== user.uid)) {
           setError('Question not found or access denied');
           navigate('/dashboard');
         } else {
@@ -45,10 +69,22 @@ const QuestionDetail = () => {
     };
     
     loadQuestion();
-  }, [id, user, navigate]);
+  }, [id, user, navigate, shareId, isShared, providedQuestion, providedHistory]);
+
+  useEffect(() => {
+    // Skip if history is already provided or question is not loaded
+    if (providedHistory || !question || !id) return;
+    
+    const loadHistory = async () => {
+      const { history: h, error } = await getQuestionHistory(id, shareId);
+      if (!error) setHistory(h);
+    };
+    
+    loadHistory();
+  }, [id, shareId, question, providedHistory,isShared]);
 
   const handleDelete = async () => {
-    if (!question) return;
+    if (!question || isShared) return;
     
     try {
       const { error } = await deleteQuestion(id);
@@ -84,6 +120,31 @@ const QuestionDetail = () => {
     }
   };
 
+  const canEdit = () => {
+    if (isShared) {
+      return accessLevel === 'edit';
+    }
+    return user && question && question.userId === user.uid;
+  };
+
+ const canComment = () => {
+    if (isShared) {
+      return ['comment', 'edit'].includes(accessLevel);
+    }
+    return user && question && question.userId === user.uid;
+  };
+
+    const canViewHistory = () => {
+    if (isShared) {
+      return ['comment', 'edit'].includes(accessLevel);
+    }
+    return user && question && question.userId === user.uid;
+  };
+
+  const canDelete = () => {
+    return !isShared && user && question && question.userId === user.uid;
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -100,7 +161,17 @@ const QuestionDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
+      {/* {isShared && share && (
+        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <h2 className="text-lg font-bold text-blue-800 dark:text-blue-300">
+            Shared {share.type === 'public' ? 'Publicly' : `Privately with ${share.email}`}
+          </h2>
+          <p className="text-blue-700 dark:text-blue-400 mt-1">
+            Access Level: {accessLevel.charAt(0).toUpperCase() + accessLevel.slice(1)}
+          </p>
+        </div>
+      )}
+       */}
       <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -161,20 +232,35 @@ const QuestionDetail = () => {
         </div>
         
         <div className="flex space-x-2 ml-4">
-          <button
-            onClick={() => navigate(`/edit-question/${id}`)}
-            className="btn-secondary inline-flex items-center space-x-2"
-          >
-            <Edit className="h-4 w-4" />
-            <span>Edit</span>
-          </button>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="btn-danger inline-flex items-center space-x-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Delete</span>
-          </button>
+          {!isShared && (
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="btn-secondary inline-flex items-center space-x-2"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>Share</span>
+            </button>
+          )}
+          
+          {canEdit() && (
+            <button
+              onClick={() => navigate(`/edit-question/${id}`)}
+              className="btn-secondary inline-flex items-center space-x-2"
+            >
+              <Edit className="h-4 w-4" />
+              <span>Edit</span>
+            </button>
+          )}
+          
+          {canDelete() && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="btn-danger bg-red-400 dark:bg-red-900 inline-flex items-center space-x-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       </div>
       
@@ -260,6 +346,35 @@ const QuestionDetail = () => {
           )}
         </div>
       </div>
+      
+      {/* Comments Section */}
+      {question && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="btn-secondary"
+          >
+            {showComments ? 'Hide Comments' : 'Show Comments'}
+          </button>
+          
+          {showComments && (
+            <div className="mt-4">
+              {canComment() && (
+                <div className="mt-4">
+                  <CommentForm questionId={id} shareId={shareId} />
+                </div>
+              )}
+
+              <div className="mt-6">
+                <HistorySection 
+                  history={history} 
+                  showComments={showComments}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
@@ -288,8 +403,17 @@ const QuestionDetail = () => {
           </div>
         </div>
       )}
+
+   {showShareModal && (
+  <ShareModal 
+    questionId={id} 
+    onClose={() => setShowShareModal(false)} 
+  />
+)}
     </div>
+    
   );
+  
 };
 
 export default QuestionDetail;

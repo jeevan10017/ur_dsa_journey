@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserQuestions, testFirestoreConnection } from '../services/firestore';
 import { Plus, Search, Filter, Calendar, Star, Clock, TrendingUp, AlertCircle, RefreshCw, Tag } from 'lucide-react';
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -418,7 +419,7 @@ const Dashboard = () => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredQuestions.map((question) => (
             <QuestionCard
               key={question.id}

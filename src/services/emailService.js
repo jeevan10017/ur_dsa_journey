@@ -44,7 +44,7 @@ const ensureUserProfile = async (userId) => {
         emailVerified: currentUser.emailVerified,
         preferences: {
           emailReminders: true,
-          defaultReminderInterval: '7_days',
+          defaultReminderInterval: 'none',
           theme: 'light'
         },
         createdAt: serverTimestamp(),
@@ -116,7 +116,7 @@ export const getUserPreferences = async (userId) => {
     const userData = userSnap.data();
     const preferences = userData.preferences || {
       emailReminders: true,
-      defaultReminderInterval: '7_days',
+      defaultReminderInterval: 'none',
       theme: 'light'
     };
 
@@ -131,7 +131,7 @@ export const getUserPreferences = async (userId) => {
     console.error('Error getting user preferences:', error);
     return {
       emailReminders: false,
-      defaultReminderInterval: '7_days',
+      defaultReminderInterval: 'none',
       theme: 'light'
     };
   }

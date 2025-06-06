@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Copy, Settings, Zap, AlertCircle, CheckCircle, Info, Clipboard } from 'lucide-react';
 
-const CodeEditor = ({ value, onChange, readOnly = false, language = 'javascript' }) => {
+const CodeEditor = ({ value, onChange, readOnly = false, language = 'cpp' }) => {
   const [code, setCode] = useState(value || '');
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [errors, setErrors] = useState([]);
