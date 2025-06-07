@@ -2,15 +2,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserQuestions, testFirestoreConnection } from '../services/firestore';
-import { Plus, Search, Filter, Calendar, Star, Clock, TrendingUp, AlertCircle, RefreshCw, Tag } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, Star, Clock, TrendingUp, AlertCircle, RefreshCw, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import QuestionCard from '../components/dashboard/QuestionCard';
 import StatsCard from '../components/dashboard/StatsCard';
 import FilterBar from '../components/dashboard/FilterBar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
+import LeetcodeStats from '../components/leetcodeStats/LeetcodeStats';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+ const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
@@ -21,6 +22,8 @@ const Dashboard = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [selectedTopics, setSelectedTopics] = useState([]);
+  const [isLeetCodeExpanded, setIsLeetCodeExpanded] = useState(false);
+ 
 
   useEffect(() => {
     if (user) {
@@ -176,6 +179,11 @@ const Dashboard = () => {
   // Check if any filters are active
   const hasActiveFilters = searchTerm || selectedDifficulty !== 'all' || selectedTopics.length > 0;
 
+  // Toggle LeetCode stats expansion
+  const toggleLeetCodeStats = () => {
+    setIsLeetCodeExpanded(!isLeetCodeExpanded);
+  };
+
   // Connection error state
   if (connectionStatus === 'failed' && error) {
     return (
@@ -271,12 +279,6 @@ const Dashboard = () => {
           icon={<TrendingUp className="h-6 w-6" />}
           color="green"
         />
-        {/* <StatsCard
-          title="Topics"
-          value={stats.topicsCount}
-          icon={<Tag className="h-6 w-6" />}
-          color="purple"
-        /> */}
         <StatsCard
           title="Easy Problems"
           value={stats.easy}
@@ -313,6 +315,37 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* LeetCode Stats Collapsible Section */}
+      <div className="mb-6">
+        <div 
+          className="bg-gradient-to-r from-blue-900/80 to-blue-800/80  dark:bg-gradient-to-r  dark:from-blue-900 dark:to-blue-800 rounded-t-lg px-6 py-4 cursor-pointer transition-all duration-200 shadow-lg"
+          onClick={toggleLeetCodeStats}
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white flex items-center space-x-2">
+              <span>Your LeetCode Stats</span>
+            </h2>
+            <div className=" text-blue-100 ">
+              {isLeetCodeExpanded ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div 
+          className={`overflow-hidden transition-all duration-1000 ease-in-out ${
+            isLeetCodeExpanded ? 'max-h-fit opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className=" rounded-b-lg  p-6 shadow-lg">
+            <LeetcodeStats leetcodeUsername={userProfile?.leetcodeUsername} />
+          </div>
+        </div>
+      </div>
+ 
       {/* Search and Filter Bar */}
 <div className="mb-6">
   <div className="flex flex-col lg:flex-row gap-4">

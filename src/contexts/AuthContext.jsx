@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase';
+import { getUserProfile } from '../services/firestore'; // Make sure this import exists
 
 const AuthContext = createContext();
 
@@ -16,6 +17,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+
+  const updateUserProfile = (profile) => {
+    setUserProfile(profile);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -27,9 +33,27 @@ export const AuthProvider = ({ children }) => {
         try {
           await user.getIdToken(true);
           console.log('Token refreshed successfully');
+          
+          // Load user profile from Firestore
+          try {
+            const { profile, error } = await getUserProfile(user.uid);
+            if (!error && profile) {
+              setUserProfile(profile);
+              console.log('User profile loaded:', profile);
+            } else {
+              console.log('No user profile found or error:', error);
+              setUserProfile(null);
+            }
+          } catch (profileError) {
+            console.error('Error loading user profile:', profileError);
+            setUserProfile(null);
+          }
         } catch (refreshError) {
           console.error('Token refresh error:', refreshError);
         }
+      } else {
+        // Clear user profile when user logs out
+        setUserProfile(null);
       }
       
       setUser(user);
@@ -39,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Auth state change error:', error);
       setAuthError(error.message);
       setUser(null);
+      setUserProfile(null);
       setLoading(false);
     });
 
@@ -81,11 +106,13 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    userProfile,
     loading,
     authError,
     isAuthenticated,
     getAuthToken,
-    refreshAuth
+    refreshAuth,
+    updateUserProfile
   };
 
   return (
