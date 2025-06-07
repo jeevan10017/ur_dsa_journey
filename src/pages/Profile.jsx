@@ -76,7 +76,7 @@ const Profile = () => {
     preferences: {
       theme: 'dark',
       emailReminders: true,
-      defaultReminderInterval: '7_days'
+      defaultReminderInterval: 'none'
     },
     profession: '',
     institution: '',
@@ -115,7 +115,7 @@ const Profile = () => {
         preferences: {
           theme: profile.preferences?.theme || 'dark',
           emailReminders: profile.preferences?.emailReminders ?? true,
-          defaultReminderInterval: profile.preferences?.defaultReminderInterval || '7_days'
+          defaultReminderInterval: profile.preferences?.defaultReminderInterval || 'none'
         },
         profession: profile.profession || '',
         institution: profile.institution || '',
@@ -418,7 +418,7 @@ const Profile = () => {
             preferences: {
               theme: profile.preferences?.theme || 'dark',
               emailReminders: profile.preferences?.emailReminders ?? true,
-              defaultReminderInterval: profile.preferences?.defaultReminderInterval || '7_days'
+              defaultReminderInterval: profile.preferences?.defaultReminderInterval || 'none'
             },
             profession: profile.profession || '',
             institution: profile.institution || '',
@@ -801,7 +801,7 @@ const Profile = () => {
                         ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
                       `}
                     >
-                      <option value="1_day">1 Day</option>
+                      <option value="none">none</option>
                       <option value="3_days">3 Days</option>
                       <option value="7_days">1 Week</option>
                       <option value="14_days">2 Weeks</option>

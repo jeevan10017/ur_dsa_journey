@@ -220,8 +220,7 @@ async function sendReminderEmail(snapshot, reminder) {
     await sgMail.send(msg);
     
     // Update database
-    const batch = admin.firestore().batch();
-    batch.update(snapshot.ref, { 
+     await snapshot.ref.update({ 
       status: 'sent',
       sentAt: admin.firestore.FieldValue.serverTimestamp()
     });

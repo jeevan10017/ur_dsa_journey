@@ -129,7 +129,7 @@ const LeetcodeStats = ({ leetcodeUsername }) => {
   const successRate = totalSubmissions > 0 ? Math.round((stats.totalSolved / totalSubmissions) * 100) : 0;
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6 mt-6">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6  mt-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
@@ -237,16 +237,16 @@ const LeetcodeStats = ({ leetcodeUsername }) => {
                   </div>
                   
                   <div 
-                    className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+                    className={`flex items-center px-3 py-1.5 rounded-full text-[6px] sm:text-xs font-medium ${
                       submission.statusDisplay === 'Accepted' 
                         ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700' 
                         : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700'
                     }`}
                   >
                     {submission.statusDisplay === 'Accepted' ? (
-                      <CheckCircle className="h-3 w-3 mr-1.5" />
+                      <CheckCircle className="h-2 w-2 sm:h-3 sm:w-3 mr-1.5" />
                     ) : (
-                      <XCircle className="h-3 w-3 mr-1.5" />
+                      <XCircle className="h-3 w-3 sm:h-3 sm:w-3 mr-1.5" />
                     )}
                     {submission.statusDisplay}
                   </div>

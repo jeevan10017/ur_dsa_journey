@@ -8,7 +8,7 @@ import StatsCard from '../components/dashboard/StatsCard';
 import FilterBar from '../components/dashboard/FilterBar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
-import LeetcodeStats from '../components/leetcodeStats/LeetcodeStats';
+import LeetcodeStats from '../components/dashboard/LeetcodeStats';
 
 const Dashboard = () => {
  const { user, userProfile } = useAuth();
@@ -340,7 +340,7 @@ const Dashboard = () => {
             isLeetCodeExpanded ? 'max-h-fit opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className=" rounded-b-lg  p-6 shadow-lg">
+          <div className=" rounded-b-lg  p-2 shadow-lg">
             <LeetcodeStats leetcodeUsername={userProfile?.leetcodeUsername} />
           </div>
         </div>

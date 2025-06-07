@@ -194,8 +194,10 @@ export const scheduleEmailReminder = async (userId, questionId, reminderInterval
     if (!questionId) {
       throw new Error('Question ID is required');
     }
-    if (!reminderInterval) {
-      throw new Error('Reminder interval is required');
+     if (reminderInterval === 'none') {
+      console.log('No reminder selected, cancelling existing reminders');
+      await cancelExistingReminders(userId, questionId);
+      return true;
     }
 
     console.log('Scheduling email reminder:', {
@@ -229,7 +231,11 @@ export const scheduleEmailReminder = async (userId, questionId, reminderInterval
       '7_days': 7,
       '14_days': 14,
       '30_days': 30
-    };
+    }[reminderInterval];
+    
+      if (!days) {
+      throw new Error(`Invalid reminder interval: ${reminderInterval}`);
+    }
     
     const days = daysMap[reminderInterval];
     
@@ -249,25 +255,23 @@ export const scheduleEmailReminder = async (userId, questionId, reminderInterval
     await cancelExistingReminders(userId, questionId);
     
     // Schedule the first reminder
-    const firstReminderDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    const reminderData = {
+    const reminderDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+     const reminderData = {
       userId,
       questionId,
-      reminderDate: Timestamp.fromDate(firstReminderDate),
-      reminderInterval: reminderInterval,
+      reminderDate: Timestamp.fromDate(reminderDate),
       status: 'active',
       createdAt: serverTimestamp(),
-      type: 'recurring',
-      iteration: 1
+      type: 'one_time' // Changed from 'recurring'
     };
 
-    console.log('Creating first recurring reminder:', {
+     console.log('Creating one-time reminder:', {
       ...reminderData,
-      reminderDate: firstReminderDate.toISOString()
+      reminderDate: reminderDate.toISOString()
     });
     
     const reminderRef = await addDoc(collection(db, 'reminders'), reminderData);
-    console.log('Recurring reminder created with ID:', reminderRef.id);
+    console.log('One-time reminder created with ID:', reminderRef.id);
     
     return true;
   } catch (error) {
