@@ -551,9 +551,9 @@ const QuestionForm = () => {
           </div>
 
           {/* Two Column Layout for Test Cases and Code */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-7 gap-8">
             {/* Test Cases Section */}
-            <div className="bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden xl:col-span-2">
               <div className="px-6 py-4 ">
                 <div className="flex items-center space-x-2">
                   <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -636,7 +636,7 @@ const QuestionForm = () => {
             </div>
 
             {/* Code Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gradient-to-r from-slate-900 to-gray-900">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gradient-to-r from-slate-900 to-gray-900 xl:col-span-5">
               <div className="px-6 py-4 ">
                 <div className="flex items-center space-x-2">
                   <Code className="h-5 w-5 text-purple-600 dark:text-purple-400" />

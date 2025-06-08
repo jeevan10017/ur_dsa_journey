@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { updateProfile as updateFirebaseProfile, updateEmail, updatePassword } from 'firebase/auth';
 import { getUserProfile, createUserProfile, updateUserProfile } from '../services/firestore';
 import { auth } from '../services/firebase'; 
-import { Eye, EyeOff, Mail, User as UserIcon, Edit, Save, Camera, X, Check, AlertCircle, Code, Building } from 'lucide-react';
+import { Eye, EyeOff, Mail, User as UserIcon, Edit, Save, Camera, X,  Palette, AlertCircle, Code, Building, Shield, Settings, Clock , Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -18,14 +18,19 @@ const InputField = React.memo(({
   value,
   onChange,
   readOnly,
-  error
+  error,
+  success
 }) => (
-  <div>
-    <label htmlFor={name} className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+  <div className="group">
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-100 text:gray-900" />}
+      {Icon && (
+        <Icon className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 transition-colors ${
+          error ? 'text-red-400' : success ? 'text-green-400' : 'text-gray-400 group-focus-within:text-pink-500'
+        }`} />
+      )}
       <input
         type={type}
         id={name}
@@ -34,25 +39,31 @@ const InputField = React.memo(({
         onChange={onChange}
         readOnly={readOnly}
         className={`
-          ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-2.5 w-full
-          text-sm
-          bg-gray-50 dark:bg-gray-800 
-          border border-gray-200 dark:border-gray-700 
-          rounded-lg
-          focus:ring-2 focus:ring-pink-500 focus:border-transparent
-          transition-all duration-200 dark:text-gray-100 text:gray-900
-          ${readOnly ? 'cursor-not-allowed opacity-60' : ''}
-          ${error ? 'border-red-500 focus:ring-red-500' : ''}
+          ${Icon ? 'pl-11' : 'pl-4'} pr-4 py-3 w-full
+          text-sm font-medium
+          bg-white dark:bg-gray-800 
+          border-2 transition-all duration-300
+          rounded-xl
+          focus:outline-none focus:ring-4 focus:ring-pink-500/20
+          dark:text-gray-100 text-gray-900
+          placeholder:text-gray-400
+          ${readOnly ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+          ${error ? 'border-red-400 focus:border-red-500' : 
+            success ? 'border-green-400 focus:border-green-500' :
+            'border-gray-200 dark:border-gray-700 focus:border-pink-500'}
         `}
         placeholder={placeholder}
       />
-      {error && (
-        <div className="flex items-center mt-1 text-xs text-red-600">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          {error}
-        </div>
+      {success && (
+        <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
       )}
     </div>
+    {error && (
+      <div className="flex items-center mt-2 text-sm text-red-600 dark:text-red-400">
+        <AlertCircle className="h-4 w-4 mr-1.5" />
+        {error}
+      </div>
+    )}
   </div>
 ));
 
@@ -67,6 +78,8 @@ const Profile = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [localUserProfile, setLocalUserProfile] = useState(null);
   const { theme: contextTheme, setTheme: contextSetTheme } = useTheme();
+    const [activeTab, setActiveTab] = useState('personal');  
+  const [successFields, setSuccessFields] = useState({});
 
   const [formData, setFormData] = useState({
     displayName: '',
@@ -432,28 +445,45 @@ const Profile = () => {
     }
   };
 
+  const tabs = [
+    { id: 'personal', label: 'Personal Info', icon: UserIcon },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'preferences', label: 'Preferences', icon: Settings }
+  ];
+
  
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+   return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Enhanced Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
               Profile Settings
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Manage your account settings and preferences
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Manage your account settings and preferences with ease
             </p>
+            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
+              {/* <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> */}
+              {/* <span>Last updated: 2 minutes ago</span> */}
+            </div>
           </div>
+          
           <div className="flex gap-3">
             {isEditing ? (
               <>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
+                  className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200 flex items-center shadow-sm hover:shadow-md"
                   disabled={loading}
                 >
                   <X className="mr-2 h-4 w-4" />
@@ -462,12 +492,12 @@ const Profile = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !isDirty}
-                  className="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 rounded-lg transition-colors flex items-center"
+                  className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 disabled:from-pink-400 disabled:to-pink-500 rounded-xl transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Saving...
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Saving Changes...
                     </>
                   ) : (
                     <>
@@ -480,7 +510,7 @@ const Profile = () => {
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors flex items-center"
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 rounded-xl transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Profile
@@ -489,36 +519,59 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Profile Picture Section */}
+        {/* Enhanced Tab Navigation */}
+        <div className="mb-8">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-2xl p-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-6 py-3 rounded-xl sm:text-sm text-[10px]  font-medium transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-white dark:bg-gray-900 text-pink-600 dark:text-pink-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <tab.icon className="h-4 w-4 mr-2" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Enhanced Profile Picture Section */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                <Camera className="h-5 w-5 mr-2 text-pink-500" />
                 Profile Picture
               </h2>
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-pink-500 to-purple-600 p-0.5">
+              
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative group">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-pink-500 via-purple-600 to-blue-600 p-1 shadow-2xl">
                     <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
                       <img
                         src={formData.profilePictureUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.displayName || 'User')}&size=128&background=6366f1&color=ffffff`}
                         alt="Profile"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                   </div>
+                  
                   {isEditing && (
                     <label
                       htmlFor="profilePicture"
-                      className="absolute -bottom-1 -right-1 bg-pink-600 hover:bg-pink-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
+                      className="absolute -bottom-2 -right-2 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white rounded-full p-3 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110"
                     >
-                      <Camera className="h-3 w-3" />
+                      <Camera className="h-4 w-4" />
                     </label>
                   )}
                 </div>
                 
                 {isEditing && (
-                  <div className="mt-4 w-full">
+                  <div className="w-full space-y-4">
                     <input
                       type="file"
                       id="profilePicture"
@@ -526,31 +579,46 @@ const Profile = () => {
                       accept="image/*"
                       className="hidden"
                     />
+                    
                     {profilePictureFile && (
-                      <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mt-2">
-                        <span className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                          {profilePictureFile.name}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={removeProfilePicture}
-                          className="text-red-500 hover:text-red-700 ml-2"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                    {uploadProgress > 0 && (
-                      <div className="mt-2">
-                        <div className="bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-pink-600 h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${uploadProgress}%` }}
-                          ></div>
+                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <Upload className="h-4 w-4 text-green-500" />
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                              {profilePictureFile.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={removeProfilePicture}
+                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          Uploading... {Math.round(uploadProgress)}%
-                        </p>
+                        
+                        {uploadProgress > 0 && uploadProgress < 100 && (
+                          <div className="space-y-2">
+                            <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+                                style={{ width: `${uploadProgress}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+                              <div className="animate-spin rounded-full h-3 w-3 border border-pink-500 border-t-transparent mr-2"></div>
+                              Uploading... {Math.round(uploadProgress)}%
+                            </p>
+                          </div>
+                        )}
+                        
+                        {uploadProgress === 100 && (
+                          <div className="flex items-center text-xs text-green-600 dark:text-green-400">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Upload complete!
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -559,261 +627,332 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Main Form */}
+          {/* Enhanced Main Form */}
           <div className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Personal Information */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                  Personal Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputField
-                label="Full Name"
-                name="displayName"
-                icon={UserIcon}
-                placeholder="Enter your full name"
-                required
-                 value={formData.displayName}
-                onChange={isEditing ? handleChange : undefined}
-                 readOnly={!isEditing}
-                error={errors.displayName}
-              />
+              {activeTab === 'personal' && (
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover:shadow-2xl transition-all duration-300">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-8 flex items-center">
+                    <UserIcon className="h-6 w-6 mr-3 text-pink-500" />
+                    Personal Information
+                    <div className="ml-auto w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  </h2>
                   
-                  <InputField
-                  label="Email Address"
-        name="email"
-        type="email"
-        icon={Mail}
-        placeholder="Enter your email"
-        required
-        value={formData.email}
-        onChange={isEditing ? handleChange : undefined}
-        readOnly={!isEditing}
-        error={errors.email}
-                  />
-                  
-                  <div>
-                    <label htmlFor="profession" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      Profession
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="profession"
-                        name="profession"
-                        value={formData.profession}
-                        onChange={isEditing ? handleChange : undefined}
-                        disabled={!isEditing}
-                        className={`
-                          pl-3 pr-3 py-2.5 w-full text-sm
-                          bg-gray-50 dark:bg-gray-800 
-                          border border-gray-200 dark:border-gray-700 
-                          rounded-lg dark:text-gray-100 text:gray-900
-                          focus:ring-2 focus:ring-pink-500 focus:border-transparent
-                          transition-all duration-200
-                          ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-                        `}
-                      >
-                        <option value="">Select your profession</option>
-                        <option value="student">Student</option>
-                        <option value="software_engineer">Software Engineer</option>
-                        <option value="data_scientist">Data Scientist</option>
-                        <option value="product_manager">Product Manager</option>
-                        <option value="designer">Designer</option>
-                        <option value="other">Other</option>
-                      </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField
+                      label="Full Name"
+                      name="displayName"
+                      icon={UserIcon}
+                      placeholder="Enter your full name"
+                      required
+                      value={formData.displayName}
+                      onChange={isEditing ? handleChange : undefined}
+                      readOnly={!isEditing}
+                      error={errors.displayName}
+                      success={successFields.displayName}
+                    />
+                    
+                    <InputField
+                      label="Email Address"
+                      name="email"
+                      type="email"
+                      icon={Mail}
+                      placeholder="Enter your email"
+                      required
+                      value={formData.email}
+                      onChange={isEditing ? handleChange : undefined}
+                      readOnly={!isEditing}
+                      error={errors.email}
+                      success={successFields.email}
+                    />
+                    
+                    <div className="group">
+                      <label htmlFor="profession" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Profession
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="profession"
+                          name="profession"
+                          value={formData.profession}
+                          onChange={isEditing ? handleChange : undefined}
+                          disabled={!isEditing}
+                          className={`
+                            pl-4 pr-4 py-3 w-full text-sm font-medium
+                            bg-white dark:bg-gray-800 
+                            border-2 border-gray-200 dark:border-gray-700 
+                            rounded-xl dark:text-gray-100 text-gray-900
+                            focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500
+                            transition-all duration-300
+                            ${!isEditing ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+                          `}
+                        >
+                          <option value="">Select your profession</option>
+                          <option value="student">Student</option>
+                          <option value="software_engineer">Software Engineer</option>
+                          <option value="data_scientist">Data Scientist</option>
+                          <option value="product_manager">Product Manager</option>
+                          <option value="designer">Designer</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
                     </div>
+
+                    <InputField
+                      label="Institution/Company"
+                      name="institution"
+                      icon={Building}
+                      placeholder="Enter your institution or company"
+                      value={formData.institution}
+                      onChange={isEditing ? handleChange : undefined}
+                      readOnly={!isEditing}
+                      error={errors.institution}
+                    />
+
+                    <InputField
+                      label="LeetCode Username"
+                      name="leetcodeUsername"
+                      icon={Code}
+                      placeholder="Enter your LeetCode username"
+                      value={formData.leetcodeUsername}
+                      onChange={isEditing ? handleChange : undefined}
+                      readOnly={!isEditing}
+                      error={errors.leetcodeUsername}
+                    />
                   </div>
-
-                  <InputField
-                    label="Institution/Company"
-                    name="institution"
-                    icon={Building}
-                    placeholder="Enter your institution or company"
-                    value={formData.institution}
-                    onChange={isEditing ? handleChange : undefined}
-                    readOnly={!isEditing}
-                    error={errors.institution}
-                  />
-
-                  <InputField
-                    label="LeetCode Username"
-                    name="leetcodeUsername"
-                    icon={Code}
-                    placeholder="Enter your LeetCode username"
-                    value={formData.leetcodeUsername}
-                    onChange={isEditing ? handleChange : undefined}
-                    readOnly={!isEditing}
-                    error={errors.leetcodeUsername}
-                  />
                 </div>
-              </div>
+              )}
 
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                  Security Settings
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="newPassword" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      New Password
-                    </label>
-                    <div className="relative">
+              {/* Security Settings */}
+              {activeTab === 'security' && (
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover:shadow-2xl transition-all duration-300">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-8 flex items-center">
+                    <Shield className="h-6 w-6 mr-3 text-pink-500" />
+                    Security Settings
+                    <div className="ml-auto flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-green-600 dark:text-green-400">Secure</span>
+                    </div>
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="group">
+                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          id="newPassword"
+                          name="newPassword"
+                          value={formData.newPassword}
+                          onChange={isEditing ? handleChange : undefined}
+                          readOnly={!isEditing}
+                          className={`
+                            pl-4 pr-12 py-3 w-full text-sm font-medium
+                            bg-white dark:bg-gray-800 
+                            border-2 border-gray-200 dark:border-gray-700 
+                            rounded-xl dark:text-gray-100 text-gray-900
+                            focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500
+                            transition-all duration-300
+                            placeholder:text-gray-400
+                            ${!isEditing ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+                            ${errors.newPassword ? 'border-red-400 focus:border-red-500' : ''}
+                          `}
+                          placeholder="Leave blank to keep current password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
+                      {errors.newPassword && (
+                        <div className="flex items-center mt-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4 mr-1.5" />
+                          {errors.newPassword}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="group">
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Confirm New Password
+                      </label>
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        id="newPassword"
-                        name="newPassword"
-                        value={formData.newPassword}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
                         onChange={isEditing ? handleChange : undefined}
                         readOnly={!isEditing}
                         className={`
-                          pl-3 pr-10 py-2.5 w-full text-sm
-                          bg-gray-50 dark:bg-gray-800 
-                          border border-gray-200 dark:border-gray-700 
-                          rounded-lg dark:text-gray-100 text:gray-900
-                          focus:ring-2 focus:ring-pink-500 focus:border-transparent
-                          transition-all duration-200
-                          ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-                          ${errors.newPassword ? 'border-red-500 focus:ring-red-500' : ''}
+                          pl-4 pr-4 py-3 w-full text-sm font-medium
+                          bg-white dark:bg-gray-800 
+                          border-2 border-gray-200 dark:border-gray-700 
+                          rounded-xl dark:text-gray-100 text-gray-900
+                          focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500
+                          transition-all duration-300
+                          placeholder:text-gray-400
+                          ${!isEditing ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+                          ${errors.confirmPassword ? 'border-red-400 focus:border-red-500' : ''}
                         `}
-                        placeholder="Leave blank to keep current password"
+                        placeholder="Confirm your new password"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                      {errors.confirmPassword && (
+                        <div className="flex items-center mt-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4 mr-1.5" />
+                          {errors.confirmPassword}
+                        </div>
+                      )}
                     </div>
-                    {errors.newPassword && (
-                      <div className="flex items-center mt-1 text-xs text-red-600">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {errors.newPassword}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      Confirm New Password
-                    </label>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={isEditing ? handleChange : undefined}
-                      readOnly={!isEditing}
-                      className={`
-                        pl-3 pr-3 py-2.5 w-full text-sm
-                        bg-gray-50 dark:bg-gray-800 
-                        border border-gray-200 dark:border-gray-700 
-                        rounded-lg dark:text-gray-100 text:gray-900
-                        focus:ring-2 focus:ring-pink-500 focus:border-transparent
-                        transition-all duration-200
-                        ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-                        ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''}
-                      `}
-                      placeholder="Confirm your new password"
-                    />
-                    {errors.confirmPassword && (
-                      <div className="flex items-center mt-1 text-xs text-red-600">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {errors.confirmPassword}
-                      </div>
-                    )}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Preferences */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                  Preferences
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="theme" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      Theme
-                    </label>
-                    <select
-                      id="theme"
-                      name="preferences.theme"
-                      value={formData.preferences.theme}
-                      onChange={
-                        isEditing
-                          ? (e) => {
-                              handleChange(e);
-                              handleThemeChange(e);
-                            }
-                          : undefined
-                      }
-                      disabled={!isEditing}
-                      className={`
-                        pl-3 pr-3 py-2.5 w-full max-w-xs text-sm
-                        bg-gray-50 dark:bg-gray-800 
-                        border border-gray-200 dark:border-gray-700 
-                        rounded-lg dark:text-gray-100 text:gray-900
-                        focus:ring-2 focus:ring-pink-500 focus:border-transparent
-                        transition-all duration-200
-                        ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-                      `}
-                    >
-                      <option value="dark">Dark Mode</option>
-                      <option value="light">Light Mode</option>
-                      <option value="system">System Default</option>
-                    </select>
-                  </div>
+              {activeTab === 'preferences' && (
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover:shadow-2xl transition-all duration-300">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-8 flex items-center">
+                    <Settings className="h-6 w-6 mr-3 text-pink-500" />
+                    Preferences
+                  </h2>
+                  
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="group">
+                        <label htmlFor="theme" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                          <Palette className="h-4 w-4 mr-2" />
+                          Theme
+                        </label>
+                        <select
+                          id="theme"
+                          name="preferences.theme"
+                          value={formData.preferences.theme}
+                          onChange={
+                            isEditing
+                              ? (e) => {
+                                  handleChange(e);
+                                  handleThemeChange(e);
+                                }
+                              : undefined
+                          }
+                          disabled={!isEditing}
+                          className={`
+                            pl-4 pr-4 py-3 w-full text-sm font-medium
+                            bg-white dark:bg-gray-800 
+                            border-2 border-gray-200 dark:border-gray-700 
+                            rounded-xl dark:text-gray-100 text-gray-900
+                            focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500
+                            transition-all duration-300
+                            ${!isEditing ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+                          `}
+                        >
+                          <option value="dark">🌙 Dark Mode</option>
+                          <option value="light">☀️ Light Mode</option>
+                          <option value="system">🖥️ System Default</option>
+                        </select>
+                      </div>
 
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="emailReminders"
-                      name="preferences.emailReminders"
-                      checked={formData.preferences.emailReminders}
-                      onChange={isEditing ? handleChange : undefined}
-                      disabled={!isEditing}
-                      className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="emailReminders" className="ml-3 block text-sm text-gray-700 dark:text-gray-300">
-                      Enable email reminders
-                    </label>
-                  </div>
+                      <div className="group">
+                        <label htmlFor="defaultReminderInterval" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Default Reminder Interval
+                        </label>
+                        <select
+                          id="defaultReminderInterval"
+                          name="preferences.defaultReminderInterval"
+                          value={formData.preferences.defaultReminderInterval}
+                          onChange={isEditing ? handleChange : undefined}
+                          disabled={!isEditing}
+                          className={`
+                            pl-4 pr-4 py-3 w-full text-sm font-medium
+                            bg-white dark:bg-gray-800 
+                            border-2 border-gray-200 dark:border-gray-700 
+                            rounded-xl dark:text-gray-100 text-gray-900
+                            focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500
+                            transition-all duration-300
+                            ${!isEditing ? 'cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+                          `}
+                        >
+                          <option value="none">🚫 None</option>
+                          <option value="3_days">📅 3 Days</option>
+                          <option value="7_days">📅 1 Week</option>
+                          <option value="14_days">📅 2 Weeks</option>
+                          <option value="30_days">📅 1 Month</option>
+                        </select>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label htmlFor="defaultReminderInterval" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      Default Reminder Interval
-                    </label>
-                    <select
-                      id="defaultReminderInterval"
-                      name="preferences.defaultReminderInterval"
-                      value={formData.preferences.defaultReminderInterval}
-                      onChange={isEditing ? handleChange : undefined}
-                      disabled={!isEditing}
-                      className={`
-                        pl-3 pr-3 py-2.5 w-full max-w-xs text-sm
-                        bg-gray-50 dark:bg-gray-800 
-                        border border-gray-200 dark:border-gray-700 
-                        rounded-lg dark:text-gray-100 text:gray-900
-                        focus:ring-2 focus:ring-pink-500 focus:border-transparent
-                        transition-all duration-200
-                        ${!isEditing ? 'cursor-not-allowed opacity-60' : ''}
-                      `}
-                    >
-                      <option value="none">none</option>
-                      <option value="3_days">3 Days</option>
-                      <option value="7_days">1 Week</option>
-                      <option value="14_days">2 Weeks</option>
-                      <option value="30_days">1 Month</option>
-                    </select>
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg p-2">
+                            <Bell className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                              Email Notifications
+                            </h3>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              Receive reminders and updates via email
+                            </p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            id="emailReminders"
+                            name="preferences.emailReminders"
+                            checked={formData.preferences.emailReminders}
+                            onChange={isEditing ? handleChange : undefined}
+                            disabled={!isEditing}
+                            className="sr-only peer"
+                          />
+                          <div className={`
+                            relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 dark:peer-focus:ring-pink-800 rounded-full peer dark:bg-gray-700 
+                            peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                            after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
+                            peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-purple-600
+                            ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}
+                          `}></div>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </form>
           </div>
         </div>
+
+        {/* Success Toast */}
+        {Object.keys(successFields).length > 0 && (
+          <div className="fixed bottom-6 right-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 animate-slide-up">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">Profile updated successfully!</span>
+          </div>
+        )}
       </div>
+
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
