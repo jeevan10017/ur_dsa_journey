@@ -27,6 +27,7 @@ import {
   createUserProfileIfNotExists,
   getUserPreferences,
 } from "../../services/emailService";
+import DSADriveLoader from "../common/DSADriveLoader";
 // import { addQuestionHistory } from '../../services/firestore';
 import { TOPICS } from "../../utils/constants";
 
@@ -299,18 +300,7 @@ const QuestionForm = () => {
 
   // Show loading while preferences are being loaded or question is being loaded
   if (preferencesLoading || (isEditing && !initialLoadComplete && !loading)) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            {preferencesLoading
-              ? "Loading preferences..."
-              : "Loading question..."}
-          </p>
-        </div>
-      </div>
-    );
+   return <DSADriveLoader />;
   }
 
   // Custom styles for react-select to support dark mode
@@ -319,8 +309,8 @@ const QuestionForm = () => {
       ...provided,
       backgroundColor: "transparent",
       borderColor: state.isFocused
-        ? "rgb(236 72 153)" // pink-500
-        : "rgb(209 213 219)", // gray-300 for light mode
+        ? "rgb(236 72 153)" 
+        : "rgb(209 213 219)", 
       boxShadow: state.isFocused ? "0 0 0 2px rgba(236, 72, 153, 0.2)" : "none",
       "&:hover": {
         borderColor: "rgb(236 72 153)",
@@ -379,7 +369,7 @@ const QuestionForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900">
       <style jsx>{`
         :root {
           --select-bg: white;
@@ -399,12 +389,12 @@ const QuestionForm = () => {
       `}</style>
 
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gradient-to-r from-slate-900 to-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gradient-to-r from-gray-950 via-gray-950 to-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors"
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
               Back

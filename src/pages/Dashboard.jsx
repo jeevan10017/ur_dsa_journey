@@ -6,7 +6,7 @@ import { Plus, Search, Filter, Calendar, Star, Clock, TrendingUp, AlertCircle, R
 import QuestionCard from '../components/dashboard/QuestionCard';
 import StatsCard from '../components/dashboard/StatsCard';
 import FilterBar from '../components/dashboard/FilterBar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import DSADriveLoader from '../components/common/DSADriveLoader';
 import toast from 'react-hot-toast';
 import LeetcodeStats from '../components/dashboard/LeetcodeStats';
 
@@ -246,33 +246,18 @@ const Dashboard = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <LoadingSpinner size="lg" text="" />
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-20 animate-pulse"></div>
-          </div>
-          <p className="mt-6 text-xl font-medium bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Loading your questions...
-          </p>
-          <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Preparing your DSA dashboard
-          </p>
-        </div>
-      </div>
-    );
+    return <DSADriveLoader />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-gray-900  dark:to-gray-950 ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Enhanced Header */}
         <div className="mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="relative">
               {/* <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-25"></div> */}
-              <div className="relative">
+              {/* <div className="relative">
                 <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
                   Dashboard
                 </h1>
@@ -280,7 +265,7 @@ const Dashboard = () => {
                   <Target className="h-5 w-5" />
                   <p className="text-lg">Track your DSA learning progress</p>
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="mt-6 sm:mt-0 flex items-center space-x-4">
               {/* Connection Status */}
@@ -297,7 +282,7 @@ const Dashboard = () => {
               {/* Add Question Button */}
               <Link
                 to="/add-question"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center space-x-2"
+                className="bg-gradient-to-r from-blue-950/90 to-blue-950/80 dark:fromblue-950/90 dark:to-indigo-950/80 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center space-x-2"
               >
                 <Plus className="h-5 w-5" />
                 <span>Add Question</span>
@@ -572,7 +557,7 @@ const Dashboard = () => {
             {filteredQuestions.map((question, index) => (
               <div
                 key={question.id}
-                className="transform transition-all duration-300 hover:scale-105"
+                className=""
                 style={{
                   animationDelay: `${index * 50}ms`,
                   animation: 'fadeInUp 0.6s ease-out forwards'
@@ -588,47 +573,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Add custom CSS for animations */}
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .backdrop-blur-sm {
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-        }
-        
-        .shadow-3xl {
-          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
-        }
-        
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #3b82f6, #6366f1);
-          border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #2563eb, #4f46e5);
-        }
-      `}</style>
+    
     </div>
   );
 };

@@ -31,6 +31,11 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+
+const adminEmails = import.meta.env.VITE_ADMIN_EMAILS?.split(',') || [];
+  
+  const isAdmin = adminEmails.includes(user?.email);
+  
   // Handle scroll effect for header
   useEffect(() => {
     const handleScroll = () => {
@@ -106,6 +111,15 @@ const Header = () => {
                   <span className="h-1.5 w-1.5 bg-white rounded-full"></span>
                 </span>
               </button>
+
+                {isAdmin && (
+        <Link
+          to="/admin/suggestions"
+          className="px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text:gray-700 dark:text-gray-300 flex items-center space-x-2"
+        >
+          Admin
+        </Link>
+      )}
 
               {/* Enhanced Theme toggle */}
               <button

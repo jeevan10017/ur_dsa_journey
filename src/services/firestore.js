@@ -868,3 +868,54 @@ export const getQuestionWithAccess = async (questionId, shareId = null) => {
     return { question: null, error: handleFirestoreError(error), canEdit: false };
   }
 };
+
+
+// Suggestion operations
+export const addSuggestion = async (suggestionData) => {
+  try {
+    const user = checkAuth();
+    
+    const suggestion = {
+      ...suggestionData,
+      userId: user.uid,
+      userEmail: user.email,
+      status: 'open',
+      priority: suggestionData.type === 'bug' ? 'high' : 'medium',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(collection(db, 'suggestions'), suggestion);
+    return { id: docRef.id, error: null };
+  } catch (error) {
+    return { id: null, error: handleFirestoreError(error) };
+  }
+};
+
+export const getSuggestions = async () => {
+  try {
+    checkAuth();
+    const q = query(collection(db, 'suggestions'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const suggestions = [];
+    querySnapshot.forEach((doc) => {
+      suggestions.push({ id: doc.id, ...doc.data() });
+    });
+    return { suggestions, error: null };
+  } catch (error) {
+    return { suggestions: [], error: handleFirestoreError(error) };
+  }
+};
+
+export const updateSuggestionStatus = async (suggestionId, status) => {
+  try {
+    checkAuth();
+    await updateDoc(doc(db, 'suggestions', suggestionId), {
+      status,
+      updatedAt: serverTimestamp()
+    });
+    return { error: null };
+  } catch (error) {
+    return { error: handleFirestoreError(error) };
+  }
+};

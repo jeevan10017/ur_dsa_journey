@@ -97,7 +97,7 @@ const QuestionCard = ({ question, onDelete }) => {
 
   return (
     <div 
-      className="relative bg-white dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/5 transition-all duration-300 group cursor-pointer hover:-translate-y-1 hover:border-indigo-200 dark:hover:border-indigo-800/50"
+      className="relative flex flex-col h-full bg-white dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/5 transition-all duration-300 group cursor-pointer hover:-translate-y-1 hover:border-indigo-200 dark:hover:border-indigo-800/50 z-10"
       onClick={handleCardClick}
     >
       {/* Gradient overlay for depth */}

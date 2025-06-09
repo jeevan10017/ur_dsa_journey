@@ -19,6 +19,7 @@ import {
   UserCheck,
   LogIn
 } from 'lucide-react';
+import DSADriveLoader from '../common/DSADriveLoader';
 
 const SharedQuestionPage = () => {
   const { shareId } = useParams();
@@ -119,17 +120,7 @@ const SharedQuestionPage = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900">
-        <Header showAuthButtons={true} />
-        <main className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-center">
-            <LoadingSpinner />
-            <p className="text-gray-600 dark:text-gray-400 mt-4">Loading shared content...</p>
-          </div>
-        </main>
-      </div>
-    );
+   return <DSADriveLoader />;
   }
 
   if (error) {
@@ -195,7 +186,7 @@ const SharedQuestionPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900">
         <Header showAuthButtons={true} />
-        <main className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <main className="pt-20 flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full mx-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-yellow-200 dark:border-yellow-800 overflow-hidden">
               {/* Warning Header */}
@@ -233,9 +224,9 @@ const SharedQuestionPage = () => {
   const AccessLevelIcon = getAccessLevelIcon(share?.accessLevel);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900">
       <Header showAuthButtons={true} />
-      <main className="pt-16">
+      <main className="pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Enhanced Share Status Banner */}
           {share && (

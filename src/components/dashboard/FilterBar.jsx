@@ -121,38 +121,6 @@ const FilterBar = ({
                     />
                   </div>
                 </div>
-                
-                {/* {selectedTopics.length > 0 && (
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-blue-50/30 dark:bg-blue-900/10">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Selected ({selectedTopics.length})
-                      </span>
-                      <button
-                        onClick={clearAllTopics}
-                        className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors hover:underline"
-                      >
-                        Clear all
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTopics.map(topic => (
-                        <span
-                          key={topic}
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm hover:shadow-md transition-shadow"
-                        >
-                          {topic}
-                          <button
-                            onClick={() => handleTopicRemove(topic)}
-                            className="ml-2 text-indigo-200 hover:text-white transition-colors"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )} */}
 
                 <div className="max-h-64 overflow-y-auto">
                   {filteredTopics.length === 0 ? (

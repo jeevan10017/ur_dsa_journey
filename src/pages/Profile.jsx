@@ -6,6 +6,7 @@ import { auth } from '../services/firebase';
 import { Eye, EyeOff, Mail, User as UserIcon, Edit, Save, Camera, X,  Palette, AlertCircle, Code, Building, Shield, Settings, Clock , Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTheme } from '../contexts/ThemeContext';
+import Footer from '../components/common/Footer';
 
 
 const InputField = React.memo(({ 
@@ -454,18 +455,18 @@ const Profile = () => {
  
 
    return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Enhanced Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
               Profile Settings
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
@@ -927,6 +928,7 @@ const Profile = () => {
               )}
             </form>
           </div>
+         
         </div>
 
         {/* Success Toast */}
@@ -953,6 +955,7 @@ const Profile = () => {
           animation: slide-up 0.3s ease-out;
         }
       `}</style>
+       <Footer/>
     </div>
   );
 };

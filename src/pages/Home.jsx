@@ -1,8 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Code, BarChart, BookOpen, Clock, Send, Users, Sparkles, ArrowRight, Star } from 'lucide-react';
+import profile1 from '../assets/profiles/profile/profile1.png';
+import profile2 from '../assets/profiles/profile/profile2.png';
+import profile3 from '../assets/profiles/profile/profile3.png';
+import profile4 from '../assets/profiles/profile/profile4.png';
 
 const Home = () => {
+
+  const profileImages = [profile1, profile2, profile3, profile4];
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 relative overflow-hidden">
       {/* Background decorations */}
@@ -59,11 +65,17 @@ const Home = () => {
         {/* Social proof */}
         <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
           <div className="flex items-center">
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-8 h-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full border-2 border-white dark:border-gray-800"></div>
-              ))}
-            </div>
+           <div className="flex -space-x-2">
+  {profileImages.map((image, i) => (
+    <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 overflow-hidden">
+      <img 
+        src={image} 
+        alt={`Profile ${i + 1}`}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  ))}
+</div>
             <span className="ml-3">10,000+ Developers</span>
           </div>
           <div className="flex items-center">

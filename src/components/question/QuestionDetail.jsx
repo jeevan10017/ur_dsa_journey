@@ -24,11 +24,11 @@ import {
   Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import LoadingSpinner from '../common/LoadingSpinner';
 import ShareModal from '../ui/ShareModal';
 import { getQuestionHistory } from '../../services/firestore';
 import HistorySection from './HistorySection';
 import CommentForm from './CommentForm';
+import DSADriveLoader from '../common/DSADriveLoader';
 
 const QuestionDetail = ({
   isShared = false,
@@ -166,14 +166,14 @@ const QuestionDetail = ({
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center">
-        <LoadingSpinner />
+        <DSADriveLoader />
       </div>
     );
   }
 
   if (error || !question) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center">
         <div className="max-w-md w-full mx-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center border border-red-200 dark:border-red-800">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -199,7 +199,7 @@ const QuestionDetail = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Enhanced Header with Breadcrumb */}
         <div className="mb-8">
           <button

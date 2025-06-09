@@ -20,6 +20,8 @@ import "./styles/globals.css";
 import Home from "./pages/Home";
 import SharedQuestionPage from "./components/question/SharedQuestionPage";
 import { QuestionProvider } from "./contexts/QuestionContext";
+import SuggestionSystem from './components/common/SuggestionSystem';
+import AdminSuggestions from './pages/AdminSuggestion';
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
         <QuestionProvider>
           <Router>
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+               <SuggestionSystem />
               <Toaster
                 position="top-right"
                 toastOptions={{
@@ -82,6 +85,18 @@ function App() {
                       <Header />
                       <main className="pt-16">
                         <AddQuestion />
+                      </main>
+                    </AuthGuard>
+                  }
+                />
+                 {/* Admin Route */}
+                <Route
+                  path="/admin/suggestions"
+                  element={
+                    <AuthGuard>
+                      <Header />
+                      <main className="pt-16">
+                        <AdminSuggestions />
                       </main>
                     </AuthGuard>
                   }
